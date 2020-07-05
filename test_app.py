@@ -1,3 +1,10 @@
+"""
+This is the unittest file I have been working with.
+Not all test throw errors some are printing just so I can see that files are being read.
+Adjust the test db location in the base class.
+
+"""
+
 import unittest
 import app
 import sqlite3
