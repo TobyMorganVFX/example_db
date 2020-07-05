@@ -1,3 +1,6 @@
+"""
+A Dictionary to configure the database.
+"""
 from collections import OrderedDict
 basic = {
     "DATABASE": "small_db.db",

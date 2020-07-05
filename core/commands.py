@@ -1,3 +1,6 @@
+"""
+The main app object that directs user actions to database and data_parser
+"""
 from .database import Sqlite
 from . import data_parser
 
@@ -22,8 +25,21 @@ class UserApp(object):
         user_db = self.get_database(args)
 
     def add_user(self, args):
-        user_db = self.get_database(args)
-        user_db.create_user(args.name, args.address, args.phone)
+        if args.csv:
+            reader = data_parser.FileReader(args.csv)
+            result = reader.read_csv()
+            user_db = self.get_database(args)
+            for row in result[1:]:
+                user_db.create_user(*row[1:])
+        elif args.json:
+            reader = data_parser.FileReader(args.json)
+            result = reader.read_json()
+            user_db = self.get_database(args)
+            for row in result[1:]:
+                user_db.create_user(*row[1:])
+        else:
+            user_db = self.get_database(args)
+            user_db.create_user(args.name, args.address, args.phone)
 
     def delete_user(self, args):
         user_db = self.get_database(args)
@@ -43,16 +59,19 @@ class UserApp(object):
 
     def display(self, args):
         user_db = self.get_database(args)
-        result = user_db.get_table(self.table.get("name"))
+        if args.name or args.address or args.phone:
+            result = user_db.search(None, name=args.name, address=args.address, phone=args.phone)
+        else:
+            result = user_db.get_table(self.table.get("name"))
         if result:
             table_view = data_parser.TableView(self.table)
             table_view.add_rows(result)
-
-        if args.html:
+        formatted_rows = ""
+        if args.html and not args.output:
             formatted_rows = table_view.print_table_html()
             print(formatted_rows)
         elif args.html and args.output:
-            table_view.print_table_html(write=True, path=args.output)
+            table_view.print_table_html("users", write=True, path=args.output)
         elif args.json and not args.output:
             formatted_rows = table_view.serialize_json()
             print(formatted_rows)

@@ -8,6 +8,7 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
+
 # Setup a base class to be subclassed to all tests mainly to chose which Database to use as a test
 class CheckDB(unittest.TestCase):
     def setUp(self):
@@ -79,6 +80,25 @@ class TestAddingToDB(CheckDB):
         self.assertIsNotNone(result, msg="The    test name has not been updated into the database")
         logging.info("%s was successfully added" % str(result))
 
+    def test_003_add_from_csv(self):
+        # user
+        args = app.app_parser(["-db", self.database, "add_user", "-csv", ".\\test.csv"])
+        args.func(args)
+        query = self.db_connection.execute("SELECT * FROM users")
+        result = query.fetchall()
+        # I need a way to test this
+        logging.info(result)
+
+    def test_003_add_from_json(self):
+        # user
+        args = app.app_parser(["-db", self.database, "add_user", "-json", ".\\test.json"])
+        args.func(args)
+        query = self.db_connection.execute("SELECT * FROM users")
+        result = query.fetchall()
+        # I need a way to test this
+        logging.info(result)
+
+
 
 class TestRemovingFromDB(CheckDB):
     """removing data from the db, and updating current entries"""
@@ -128,8 +148,8 @@ class TestRemovingFromDB(CheckDB):
 
     def test_003_SearchName(self):
         # user should return 2 users
-        address_search_term = "Dav*"
-        args = app.app_parser(["-db", self.database, "search", "-n", address_search_term])
+        name_search_term = "Dav*"
+        args = app.app_parser(["-db", self.database, "search", "-n", name_search_term])
         result = args.func(args)
         # Check result
         self.assertIs(len(result), 2, "The name search didn't return the expected amount of names")
@@ -157,6 +177,8 @@ class TestRemovingFromDB(CheckDB):
         # User
         args = app.app_parser(["-db", self.database, "display", "-csv", "-o", ".\\test.csv"])
         result = args.func(args)
+        self.assertTrue(os.path.exists(os.path.abspath(".\\test.csv")))
+        logging.info("A json file has been writen")
 
     def test_008_writing_json_file(self):
         # User
@@ -164,6 +186,19 @@ class TestRemovingFromDB(CheckDB):
         result = args.func(args)
         self.assertTrue(os.path.exists(os.path.abspath(".\\test.json")))
         logging.info("A json file has been writen")
+
+    def test_009_display_to_screen_search(self):
+        # User
+        args = app.app_parser(["-db", self.database, "display", "-n", "Da*"])
+        result = args.func(args)
+        # check that the correct data is returned list of lists with headers
+        self.assertIs(len(result)-1, 2, "The name search didn't return the expected amount of names")
+        logging.info("2 results have successfully been found by the search term Dav*")
+
+    def test_005_display_to_html(self):
+        # User
+        args = app.app_parser(["-db", self.database, "display", "-html", "-o", ".\\test.html"])
+        result = args.func(args)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

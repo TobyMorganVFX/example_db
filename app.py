@@ -1,10 +1,12 @@
 #!/bin/python
 """A small database app that stores columns name, address, phone_number
-   Out comes are:
+   Outcomes are:
    * build a simple API allowing you to add new records, filter users (e.g "name=Joe*") based on some simple search syntax like Glob.
    * support serialisation in 2 or more formats (e.g JSON, Yaml, XML, CSV etc)
    * Display the data in 2 or more different output formats (no need to use a GUI Framework, use e.g text output/HTML or any other human readable format).
    * Add a command line interface to add records, and display/convert/filter the whole data set
+
+   This script is the entry point for user interactions.
 """
 import argparse
 import sys
@@ -28,6 +30,8 @@ def app_parser(args):
 
     # Add User
     add_user_parser = subparsers.add_parser('add_user', help='Add a user record, must have a name')
+    add_user_parser.add_argument('-csv', help="read in from csv file, all other options will be ignored")
+    add_user_parser.add_argument('-json', help="read in from csv file, all other options will be ignored")
     add_user_parser.add_argument('-n', "--name")
     add_user_parser.add_argument('-a', "--address")
     add_user_parser.add_argument('-p', "--phone")
@@ -35,12 +39,12 @@ def app_parser(args):
 
     # Delete User
     delete_user_parser = subparsers.add_parser('delete_user', help='Delete a user record from database')
-    delete_user_parser.add_argument('-id', type=int, help="A unique id number")
+    delete_user_parser.add_argument('-id', type=int, required=True, help="A unique id number")
     delete_user_parser.set_defaults(func=user_app.delete_user)
 
     # update User
     update_user_parser = subparsers.add_parser('update_user', help='Update a user record in the database')
-    update_user_parser.add_argument('-id', type=int, help="A unique id number")
+    update_user_parser.add_argument('-id', required=True, type=int, help="A unique id number")
     update_user_parser.add_argument('-n', "--name", help="Users name")
     update_user_parser.add_argument('-a', "--address", help="Users Address")
     update_user_parser.add_argument('-p', "--phone", help="Users Phone Number")
@@ -57,10 +61,15 @@ def app_parser(args):
     # display
     display_user_parser = subparsers.add_parser('display',
                                                 help='Display records in the database to terminal or to file.')
-    display_group = display_user_parser.add_mutually_exclusive_group()
-    display_group.add_argument("-html", action="store_true", help="Will display as a html")
-    display_group.add_argument("-json", action="store_true", help="Will display as a json")
-    display_group.add_argument("-csv", action="store_true", help="Will display as a xml")
+    search_group = display_user_parser.add_mutually_exclusive_group()
+    search_group.add_argument('-n', "--name", help="glob search by Users name")
+    search_group.add_argument('-a', "--address", help="glob search by Users Address")
+    search_group.add_argument('-p', "--phone", help="glob search by Users Phone Number")
+
+    write_group = display_user_parser.add_mutually_exclusive_group()
+    write_group.add_argument("-html", action="store_true", help="Will display as a html")
+    write_group.add_argument("-json", action="store_true", help="Will display as a json")
+    write_group.add_argument("-csv", action="store_true", help="Will display as a xml")
     display_user_parser.add_argument('-o', "--output", help="write to file instead of display")
     display_user_parser.set_defaults(func=user_app.display)
 

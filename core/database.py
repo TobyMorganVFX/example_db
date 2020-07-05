@@ -1,3 +1,7 @@
+"""
+Database Manager Object
+"""
+
 import sqlite3
 from sqlite3 import Error
 
@@ -46,7 +50,7 @@ class Sqlite(object):
         except Error as e:
             print("Error: {}".format(e))
 
-    def create_user(self, name, address="", phone_number=""):
+    def create_user(self, name="", address="", phone_number=""):
         self.execute_query("INSERT INTO users (name, address, phone) VALUES (?, ?, ?);", (name, address, phone_number))
 
     def delete_user(self, id):
